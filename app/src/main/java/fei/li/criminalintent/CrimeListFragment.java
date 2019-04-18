@@ -1,14 +1,17 @@
 package fei.li.criminalintent;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.format.DateFormat;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -29,15 +32,27 @@ public class CrimeListFragment extends Fragment {
         return v;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        updateUI();
+    }
+
     private void updateUI() {
         List<Crime> crimes = CrimeLab.getLab(getContext()).getCrimes();
-        mCrimeAdapter = new CrimeAdapter(crimes);
-        mCrimeRecyclerView.setAdapter(mCrimeAdapter);
+        if(mCrimeAdapter == null) {
+
+            mCrimeAdapter = new CrimeAdapter(crimes);
+            mCrimeRecyclerView.setAdapter(mCrimeAdapter);
+        } else {
+            mCrimeAdapter.notifyDataSetChanged();
+        }
     }
 
     private class CrimeHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         private TextView mTitleTextView;
         private TextView mDateTextView;
+        private ImageView mSolvedImageView;
         private Crime mCrime;
 
         public CrimeHolder(LayoutInflater inflater, ViewGroup parent, int layoutId) {
@@ -48,18 +63,22 @@ public class CrimeListFragment extends Fragment {
             itemView.setOnClickListener(this);
             mTitleTextView = itemView.findViewById(R.id.crime_title);
             mDateTextView = itemView.findViewById(R.id.crime_date);
+            mSolvedImageView = itemView.findViewById(R.id.crime_solved);
         }
 
         public void bindCrime(Crime crime) {
             mCrime = crime;
             mTitleTextView.setText(mCrime.getTitle());
-            mDateTextView.setText(mCrime.getDate().toString());
+            String dateStr = (android.text.format.DateFormat.format("yyyy-MM-dd", mCrime.getDate())).toString();
+            mDateTextView.setText(dateStr);
+            mSolvedImageView.setVisibility(mCrime.isSolved()?View.VISIBLE:View.INVISIBLE);
         }
 
 
         @Override
         public void onClick(View v) {
-            Toast.makeText(getContext(), mCrime.getTitle() + " is clicked", Toast.LENGTH_SHORT).show();
+            Intent intent = CrimeActivity.newIntent(getContext(), mCrime.getId());
+            startActivity(intent);
         }
     }
 
@@ -73,13 +92,7 @@ public class CrimeListFragment extends Fragment {
         @NonNull
         @Override
         public CrimeHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int viewType) {
-            if (viewType == 0) {
-
                 return new CrimeHolder(LayoutInflater.from(getContext()), viewGroup, R.layout.list_item_crime);
-            } else {
-                return new CrimeHolder(LayoutInflater.from(viewGroup.getContext()), viewGroup, R.layout.list_item_crime_police);
-            }
-
         }
 
         @Override
