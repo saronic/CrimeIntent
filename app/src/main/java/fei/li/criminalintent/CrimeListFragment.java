@@ -35,13 +35,16 @@ public class CrimeListFragment extends Fragment {
         mCrimeRecyclerView.setAdapter(mCrimeAdapter);
     }
 
-    private class CrimeHolder extends RecyclerView.ViewHolder implements View.OnClickListener{
+    private class CrimeHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         private TextView mTitleTextView;
         private TextView mDateTextView;
         private Crime mCrime;
 
-        public CrimeHolder(LayoutInflater inflater, ViewGroup parent) {
-            super(inflater.inflate(R.layout.list_item_crime, parent, false));
+        public CrimeHolder(LayoutInflater inflater, ViewGroup parent, int layoutId) {
+
+
+            super(inflater.inflate(layoutId, parent, false));
+
             itemView.setOnClickListener(this);
             mTitleTextView = itemView.findViewById(R.id.crime_title);
             mDateTextView = itemView.findViewById(R.id.crime_date);
@@ -69,13 +72,18 @@ public class CrimeListFragment extends Fragment {
 
         @NonNull
         @Override
-        public CrimeHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int i) {
+        public CrimeHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int viewType) {
+            if (viewType == 0) {
 
-            return new CrimeHolder(LayoutInflater.from(getContext()), viewGroup);
+                return new CrimeHolder(LayoutInflater.from(getContext()), viewGroup, R.layout.list_item_crime);
+            } else {
+                return new CrimeHolder(LayoutInflater.from(viewGroup.getContext()), viewGroup, R.layout.list_item_crime_police);
+            }
+
         }
 
         @Override
-        public void onBindViewHolder(@NonNull CrimeHolder crimeHolder, int i) {
+        public void onBindViewHolder(@NonNull CrimeHolder crimeHolder, int intType) {
 
         }
 
@@ -88,6 +96,15 @@ public class CrimeListFragment extends Fragment {
         public void onBindViewHolder(@NonNull CrimeHolder holder, int position, @NonNull List<Object> payloads) {
             Crime crime = mCrimes.get(position);
             holder.bindCrime(crime);
+        }
+
+        @Override
+        public int getItemViewType(int position) {
+            if (mCrimes.get(position).ismNeedPolice()) {
+                return 1;
+            } else {
+                return 0;
+            }
         }
     }
 }
